@@ -8,11 +8,18 @@ import altair as alt
 # -----------------------------
 # LOAD DATA
 # -----------------------------
-# Make sure yearly_deaths_by_clinic.csv is in the same folder as this file.
 df = pd.read_csv("yearly_deaths_by_clinic.csv")
 
-# Convert year column to an integer year (e.g., 1841, 1842, ...)
-df["year"] = pd.to_datetime(df["year"], format="%Y").dt.year
+# Normalize column names to lowercase
+df.columns = df.columns.str.strip().str.lower()
+# Now the columns are: 'year', 'birth', 'deaths', 'clinic'
+
+# Rename 'birth' to 'births' so the rest of the code works
+df = df.rename(columns={"birth": "births"})
+
+# Ensure 'year' is an integer
+df["year"] = df["year"].astype(int)
+
 
 # -----------------------------
 # APP TITLE + DESCRIPTION
