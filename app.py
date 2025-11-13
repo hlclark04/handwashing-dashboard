@@ -10,16 +10,15 @@ import altair as alt
 # -----------------------------
 df = pd.read_csv("yearly_deaths_by_clinic.csv")
 
-# Normalize column names to lowercase
+# Normalize column names to lowercase and strip spaces
 df.columns = df.columns.str.strip().str.lower()
-# Now the columns are: 'year', 'birth', 'deaths', 'clinic'
+# Now we should have: 'year', 'birth', 'deaths', 'clinic'
 
-# Rename 'birth' to 'births' so the rest of the code works
+# Rename 'birth' -> 'births' so we can use a consistent label
 df = df.rename(columns={"birth": "births"})
 
-# Ensure 'year' is an integer
+# Make sure year is an integer
 df["year"] = df["year"].astype(int)
-
 
 # -----------------------------
 # APP TITLE + DESCRIPTION
@@ -87,14 +86,21 @@ st.altair_chart(line_chart, use_container_width=True)
 # -----------------------------
 st.subheader("Births vs. Deaths by Year")
 
+# Use pandas.melt instead of Altair transform_fold to avoid spec issues
+df_long = df_filtered.melt(
+    id_vars=["year"],
+    value_vars=["births", "deaths"],
+    var_name="Metric",
+    value_name="Count"
+)
+
 bar_chart = (
-    alt.Chart(df_filtered)
-    .transform_fold(["births", "deaths"], as_=["Metric", "Count"])
+    alt.Chart(df_long)
     .mark_bar()
     .encode(
         x=alt.X("year:O", title="Year"),
         y=alt.Y("Count:Q", title="Number of Cases"),
-        color="Metric:N",
+        color=alt.Color("Metric:N", title=""),
         tooltip=["year", "Metric", "Count"],
     )
     .properties(height=350)
@@ -122,3 +128,4 @@ st.write(
 )
 
 st.caption("Data source: Reconstructed Semmelweis clinic records (Datacamp / course materials).")
+
